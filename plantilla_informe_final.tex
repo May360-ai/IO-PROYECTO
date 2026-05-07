@@ -16,6 +16,8 @@
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
 
 % --- Configuración de Encabezado y Pie de Página  fPO(Estilo PDF) ---
 \pagestyle{fancy}
@@ -219,13 +221,61 @@ Se debe determinar cuántos miles de litros enviar desde cada planta a cada CD p
     x_{ij} \geq 0 \quad \forall i \in \{A, B, C\}, \forall j \in \{1, 2, 3, 4\}
     \end{equation*}
 \end{itemize}\subsection{Tabla de resultados (matriz de envíos)}
-[Inserte aquí la matriz de resultados extraída de R]
+\begin{table}[H]
+    \centering
+    \caption{Matriz de envíos óptima (miles de litros)}
+    \begin{tabular}{|l|c|c|c|c|c|c|}
+        \hline
+        \textbf{Origen \textbackslash Destino} & \textbf{CD1} & \textbf{CD2} & \textbf{CD3} & \textbf{CD4} & \textbf{Total Enviado} & \textbf{Capacidad} \\ \hline
+        Planta A & 0 & 45 & 5 & 0 & 50 & 50 \\ \hline
+        Planta B & 30 & 0 & 30 & 0 & 60 & 60 \\ \hline
+        Planta C & 0 & 0 & 0 & 40 & 40 & 40 \\ \hline
+        \textbf{Total Recibido} & 30 & 45 & 35 & 40 & \multicolumn{2}{c|}{\textbf{Costo Total}} \\ \hline
+        \textbf{Demanda} & 30 & 45 & 35 & 40 & \multicolumn{2}{c|}{\$1,180} \\ \hline
+    \end{tabular}
+    \label{tab:matriz_envios}
+\end{table}
+
+\subsubsection{Verificación de restricciones}
+Para asegurar la validez de la solución óptima, se verifican las restricciones del modelo:
+\begin{itemize}
+    \item \textbf{Capacidad de Plantas:} Como se observa en la última columna de la Tabla \ref{tab:matriz_envios}, el total enviado por cada planta (A: 50, B: 60, C: 40) es exactamente igual a su capacidad máxima, cumpliendo con la restricción de oferta.
+    \item \textbf{Satisfacción de Demanda:} En la penúltima fila de la Tabla \ref{tab:matriz_envios}, se verifica que cada Centro de Distribución recibe exactamente la cantidad requerida (CD1: 30, CD2: 45, CD3: 35, CD4: 40), cumpliendo con la restricción de demanda.
+\end{itemize}
 
 \subsection{Análisis de sensibilidad}
-[Presentar al menos una variación en los datos, por ejemplo: ¿Qué pasaría si la demanda de CD4 aumenta a 50?]
+Si la demanda del CD4 aumenta de 40 a 50 miles de litros, la demanda total del sistema pasaría a ser de 160 unidades, superando la capacidad total de producción de las plantas (150 unidades). Esto genera un sistema \textbf{desbalanceado} donde no es posible satisfacer toda la demanda con los recursos actuales. En un escenario real, esto implicaría una escasez de 10 miles de litros en el CD4 o la necesidad de aumentar la capacidad de producción en alguna de las plantas (preferiblemente en la Planta C debido a su bajo costo de envío hacia este destino).
 
 \subsection{Gráfico de flujos}
-[Inserte aquí el gráfico representativo de la distribución óptima]
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=3.5cm,
+        source/.style={circle, draw=blue!60, fill=blue!5, very thick, minimum size=1.2cm},
+        target/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=1.2cm},
+        arrow/.style={-{Stealth}, thick}
+    ]
+        % Nodos Origen (Izquierda)
+        \node[source] (A) {A};
+        \node[source] (B) [below=2cm of A] {B};
+        \node[source] (C) [below=2cm of B] {C};
+
+        % Nodos Destino (Derecha) - Alineados verticalmente con más espacio
+        \node[target] (CD1) [right=6cm of A, yshift=1.5cm] {CD1};
+        \node[target] (CD2) [below=1.2cm of CD1] {CD2};
+        \node[target] (CD3) [below=1.2cm of CD2] {CD3};
+        \node[target] (CD4) [below=1.2cm of CD3] {CD4};
+
+        % Flujos con ajustes para evitar colisiones
+        \draw[arrow] (A.east) -- (CD2.west) node[midway, above, sloped, xshift=-0.5cm] {45};
+        \draw[arrow] (A.east) -- (CD3.west) node[midway, below, sloped, xshift=0.5cm] {5};
+        \draw[arrow] (B.east) -- (CD1.west) node[midway, above, sloped, xshift=0.5cm] {30};
+        \draw[arrow] (B.east) -- (CD3.west) node[midway, above, sloped] {30};
+        \draw[arrow] (C.east) -- (CD4.west) node[midway, above, sloped] {40};
+    \end{tikzpicture}
+    \caption{Gráfico representativo de la distribución óptima}
+    \label{fig:flujo_transporte}
+\end{figure}
 
 \subsection{Interpretación}
 Responda a las siguientes interrogantes basadas en los resultados obtenidos:
