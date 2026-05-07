@@ -1,0 +1,25 @@
+# Archivos auxiliares y logs de LaTeX
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.run.xml
+
+# Directorios generados por editores
+.vscode/
+
+# El archivo PDF generado (Recomendado ignorarlo)
+*.pdf
