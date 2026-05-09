@@ -246,6 +246,15 @@ Para asegurar la validez de la solución óptima, se verifican las restricciones
 \subsection{Análisis de sensibilidad}
 Si la demanda del CD4 aumenta de 40 a 50 miles de litros, la demanda total del sistema pasaría a ser de 160 unidades, superando la capacidad total de producción de las plantas (150 unidades). Esto genera un sistema \textbf{desbalanceado} donde no es posible satisfacer toda la demanda con los recursos actuales. En un escenario real, esto implicaría una escasez de 10 miles de litros en el CD4 o la necesidad de aumentar la capacidad de producción en alguna de las plantas (preferiblemente en la Planta C debido a su bajo costo de envío hacia este destino).
 
+Al realizar la comparación de costos mediante una simulación en R (ver Figura \ref{fig:sensibilidad}), se observa que si aumentamos la capacidad de la Planta C en 10 unidades para cubrir el incremento de demanda del CD4, el costo total de transporte asciende de \$1230 a \$1280. Este incremento de \$50 representa un aumento del 4.07\% respecto al costo original. Este análisis confirma que la Planta C es la opción más eficiente para absorber incrementos en la demanda del CD4 debido a su proximidad y bajo costo unitario (\$5 por unidad).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/sensibilidad.jpg}
+    \caption{Comparación de costos en el análisis de sensibilidad}
+    \label{fig:sensibilidad}
+\end{figure}
+
 \subsection{Gráfico de flujos}
 \begin{figure}[H]
     \centering
