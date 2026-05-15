@@ -140,10 +140,17 @@ Una planta embotelladora de agua purificada tiene \textbf{3 centros de producci�
 Programación Lineal (Modelo de Transporte) implementado en R (lpSolve) y Gestión de Proyectos mediante técnicas PERT/CPM.
 
 \subsection{Principales resultados numéricos}
-[Completar con resultados de la implementación]
+Los resultados principales obtenidos de la implementación son:
+\begin{itemize}
+    \item \textbf{Costo total mínimo de transporte:} \$1,180 (ver Tabla \ref{tab:matriz_envios}).
+    \item \textbf{Matriz de envíos óptima:} A $\rightarrow$ CD2 = 45, A $\rightarrow$ CD3 = 5, B $\rightarrow$ CD1 = 30, B $\rightarrow$ CD3 = 30, C $\rightarrow$ CD4 = 40 (miles de litros).
+    \item \textbf{Uso de capacidades:} Las plantas quedan totalmente utilizadas (A: 50, B: 60, C: 40).
+    \item \textbf{Satisfacción de demanda:} Cada centro de distribución recibe exactamente su demanda (CD1:30, CD2:45, CD3:35, CD4:40).
+    \item \textbf{Situación de equilibrio:} La demanda total (150) coincide con la capacidad total de producción (150); cualquier aumento de demanda exige ajustar capacidad o priorizar destinos.
+\end{itemize}
 
 \subsection{Conclusión principal}
-[Completar según el análisis final]
+El modelo de transporte permite satisfacer la demanda de los cuatro centros al costo mínimo de \$1,180, utilizando completamente la capacidad disponible de las tres plantas. El plan de instalación de la nueva red de distribución, analizado con PERT/CPM, resulta factible dentro del límite de 40 días: la duración crítica calculada es de 20 días, por lo que existe margen operativo para imprevistos. En conjunto, la solución es operativa y coste-eficiente; se recomienda monitorear incrementos de demanda en CD4 y considerar aumentar capacidad en Planta C si fuera necesario para mantener costos bajos.
 
 % --- 4.1.3. Modelo de transporte ---
 \section{Modelo de transporte}
@@ -287,12 +294,12 @@ Al realizar la comparación de costos mediante una simulación en R (ver Figura 
 \end{figure}
 
 \subsection{Interpretación}
-Responda a las siguientes interrogantes basadas en los resultados obtenidos:
+Con base en la matriz de envíos óptima y el análisis de sensibilidad, la interpretación de los resultados es la siguiente:
 \begin{enumerate}
-    \item ¿Qué planta envía más producto? ¿Por qué?
-    \item ¿Qué ruta es la más utilizada? ¿Qué ruta no se utiliza?
-    \item ¿Por qué la Planta C solo envía a un CD?
-    \item ¿Qué pasaría si la demanda de CD4 aumenta a 50?
+    \item \textbf{¿Qué planta envía más producto? ¿Por qué?} La Planta B envía más producto (60 miles de litros) ya que sus rutas combinadas permiten cubrir eficientemente la demanda de CD1 y CD3 con costos competitivos, y el modelo asigna la producción allí para minimizar el costo total.
+    \item \textbf{¿Qué ruta es la más utilizada? ¿Qué ruta no se utiliza?} La ruta más utilizada es A $\rightarrow$ CD2 (45 miles), seguida por las rutas desde B hacia CD1 y CD3 (30 cada una). Existen rutas sin flujo en la solución óptima (p. ej. A $\rightarrow$ CD1, B $\rightarrow$ CD2, C $\rightarrow$ CD1, C $\rightarrow$ CD2, C $\rightarrow$ CD3), lo cual es consecuencia directa de la estructura de costos y la saturación de capacidades.
+    \item \textbf{¿Por qué la Planta C solo envía a un CD?} La Planta C solo abastece a CD4 porque su costo unitario hacia CD4 es el más bajo (\$5) comparado con sus otros destinos; por tanto, el modelo la asigna íntegramente a la demanda donde resulta más rentable.
+    \item \textbf{¿Qué pasaría si la demanda de CD4 aumenta a 50?} Si la demanda de CD4 aumenta a 50, la demanda total pasa a 160, superando la capacidad total disponible (150) y generando un déficit de 10 miles de litros. Para satisfacer la demanda adicional sería necesario aumentar capacidad (p. ej. Planta C +10) o priorizar envíos según criterios comerciales; en el análisis de sensibilidad se observa que aumentar la capacidad de C en 10 unidades eleva el costo total (ejemplo: incremento de ~\$50 en el escenario simulado), por lo que hay un trade-off entre cubrir demanda y aumentar costos.
 \end{enumerate}
 
 % --- 4.1.4. Gestión del proyecto ---
@@ -326,21 +333,33 @@ La empresa debe ejecutar un proyecto de instalación de una nueva red de distrib
 [Inserte aquí el diagrama de Gantt con barras de duración, colores para ruta crítica y holguras visibles]
 
 \subsection{Análisis de cumplimiento de plazo}
-Responda a los siguientes puntos:
-\begin{enumerate}
-    \item ¿Cuál es la duración total del proyecto en días?
-    \item ¿Cumple con el límite de 40 días? Si no, ¿cuántos días excede?
-    \item Si excede, proponga al menos 2 acciones de compresión (crashing).
-    \item Si cumple, ¿cuántos días de holgura tiene el proyecto?
-\end{enumerate}
+Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
+\begin{itemize}
+    \item \textbf{Duración total del proyecto (ruta crítica):} 20 días.
+    \item \textbf{¿Cumple con el límite de 40 días?} Sí. El proyecto cumple ampliamente el plazo máximo de 40 días.
+    \item \textbf{Holgura respecto al límite:} 20 días (40 - 20 = 20).
+    \item \textbf{Ruta crítica:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G (actividades críticas: A, B, D, E, F, G).
+    \item \textbf{Actividades no críticas:} C (ruta alternativa A-B-C-E-F-G tiene 18 días).
+    \item \textbf{Acciones de compresión (si se requirieran):}
+    \begin{enumerate}
+        \item \textbf{Crashing}: Contratar recurso adicional o horas extra para reducir la duración de la actividad D (instalación en CD2), por ejemplo de 6 a 4 días mediante equipos simultáneos o subcontratación.
+        \item \textbf{Fast-tracking}: Solapar actividades que no tengan dependencia técnica estricta (por ejemplo, iniciar parte de la capacitación F en paralelo con pruebas E cuando sea seguro), o adelantar compras y logística de B mientras finaliza A en su tramo menos crítico.
+    \end{enumerate}
+\end{itemize}
 
 % --- 4.1.5. Conclusiones y recomendaciones ---
 \section{Conclusiones y recomendaciones}
 \begin{itemize}
-    \item \textbf{Resumen de hallazgos:} [Resuma los hallazgos del modelo de transporte y tiempos del proyecto]
-    \item \textbf{Respuesta a la pregunta:} ¿Se puede ejecutar el proyecto en 8 semanas?
-    \item \textbf{Recomendaciones operativas:} [Sugerencias basadas en los resultados obtenidos]
-    \item \textbf{Limitaciones del estudio:} [Mencione factores no considerados o restricciones]
+    \item \textbf{Resumen de hallazgos:} El modelo de transporte entrega una solución factible que satisface la demanda total al costo mínimo de \$1,180, aprovechando al máximo la capacidad de las tres plantas. El análisis de proyecto indica una duración crítica de 20 días, con 20 días de margen frente al límite de 40 días.
+    \item \textbf{Respuesta:} Sí, el proyecto se puede ejecutar en 8 semanas (40 días). Con la planificación actual la ejecución prevista consume 20 días, por lo que existe un colchón confortable para riesgos e imprevistos.
+    \item \textbf{Recomendaciones operativas:}
+    \begin{itemize}
+        \item Mantener monitorización periódica de la demanda, especialmente en CD4; si la demanda de CD4 aumenta, priorizar incrementar la capacidad en Planta C o reoptimizar rutas para evitar aumentos de costo.
+        \item Preservar recursos y supervisión en la ruta crítica (A, B, D, E, F, G). Asignar responsables y checkpoints diarios para evitar retrasos acumulados.
+        \item Preparar un plan de contingencia que incluya las opciones de compresión descritas (crashing y fast-tracking) y un presupuesto para horas extra o subcontratación si fuera necesario.
+        \item Revisar supuestos del modelo: incluir costos de inventario, tiempos de carga/descarga y posibles variaciones de demanda en análisis futuros.
+    \end{itemize}
+    \item \textbf{Limitaciones del estudio:} El modelo asume demandas y costos determinísticos, no considera tiempos de tránsito détaillés, capacidad de flota ni restricciones operativas (turnos, disponibilidad de instaladores), y omite costos asociados a la compresión de actividades (horas extra, subcontratos). Estas limitaciones deben considerarse al implementar las recomendaciones.
 \end{itemize}
 
 % --- 4.1.6. Anexos ---
