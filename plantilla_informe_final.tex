@@ -47,16 +47,27 @@
 \fancyfoot[C]{\thepage}
 
 % --- Configuración de listings para R ---
-\definecolor{backcolor}{RGB}{245, 245, 245}
+\definecolor{backcolor}{RGB}{250, 250, 250}
+\definecolor{codegreen}{RGB}{34, 139, 34}      % Verde para comentarios
+\definecolor{codeblue}{RGB}{42, 112, 219}      % Azul para palabras clave
+\definecolor{codegray}{RGB}{128, 128, 128}     % Gris para números
+\definecolor{codestring}{RGB}{206, 110, 24}    % Naranja para cadenas de texto
+
 \lstset{
-    language=R,
-    backgroundcolor=\color{backcolor},
-    basicstyle=\ttfamily\small,
-    breaklines=true,
-    showstringspaces=false,
-    frame=single,
-    numbers=left,
-    numberstyle=\tiny\color{gray},
+ language=R,
+ backgroundcolor=\color{backcolor},
+ basicstyle=\ttfamily\small,
+ breaklines=true,
+ showstringspaces=false,
+ frame=single,
+ numbers=left,
+ numberstyle=\tiny\color{codegray},
+ commentstyle=\color{codegreen},
+ keywordstyle=\color{codeblue},
+ stringstyle=\color{codestring},
+    % Forzar el color azul en funciones específicas utilizadas en tu script
+ otherkeywords={library, matrix, c, rep, lp.transport, cat, print, rownames, colnames},
+    rulecolor=\color{black}
 }
 
 \begin{document}
@@ -414,7 +425,7 @@ rownames(matriz_resultados) <- rownames(costos)
 colnames(matriz_resultados) <- colnames(costos)
 print(matriz_resultados)
 \end{lstlisting}
-    \item \textbf{Salidas de consola:} [Capturas o texto de la consola de R]
+    \item \textbf{Salidas de consola:}
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.75\linewidth]{imagenes/R.png}
