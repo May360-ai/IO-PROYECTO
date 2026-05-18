@@ -120,17 +120,23 @@
 % --- 4.1.2. Resumen (máx. 1 página) ---
 \section{Resumen}
 
+\subsection{Introducción}
+La optimización de la cadena de suministro y la logística de distribución constituye un factor crítico para la rentabilidad y eficiencia operativa de las empresas manufactureras. En el contexto de la Investigación de Operaciones, el problema de transporte representa una aplicación clásica de la programación lineal, cuyo propósito principal es determinar el esquema de distribución óptimo desde múltiples puntos de origen hacia diversos destinos, minimizando los costos totales de envío mientras se satisfacen simultáneamente las restricciones de oferta y demanda.\\
+
+El presente documento detalla la formulación y resolución de un modelo de transporte aplicado a una red logística de una planta embotelladora de agua purificada. El sistema estructurado está compuesto por tres centros de producción (plantas A, B y C) con capacidades de manufactura finitas, las cuales deben abastecer a cuatro centros de distribución (CD1, CD2, CD3 y CD4) que presentan requerimientos de demanda exactos. Cada ruta posible entre un origen y un destino tiene asociado un costo unitario de transporte diferenciado, exigiendo un análisis matemático para la toma de decisiones.\\
+
+Para abordar este escenario se emplea un enfoque cuantitativo mediante la construcción de un modelo de programación lineal. Las variables de decisión cuantifican el volumen de producto a trasladar en cada ruta, sujetas a restricciones de no negatividad, límites de capacidad instalada en las plantas y cumplimiento estricto de la demanda en cada centro receptor. La resolución computacional del modelo se ejecuta en el entorno estadístico R mediante la librería lpSolve, permitiendo identificar la matriz de envíos óptima y establecer una base técnica para evaluar la sensibilidad del sistema ante variaciones en los requerimientos del mercado.
+
 \subsection{Problema planteado}
 Una planta embotelladora de agua purificada tiene 3 centros de producción y debe abastecer a 4 centros de distribución (CD). Se busca minimizar el costo total de transporte y planificar la instalación de una nueva red de distribución con 7 actividades en un plazo máximo de 40 días.
 
 \subsection{Objetivos del proyecto}
-Al completar este proyecto, el estudiante será capaz de:
 \begin{enumerate}
-    \item Formular un problema de transporte como un modelo de Programación Lineal.
-    \item Implementar la solución en R.
-    \item Calcular tiempos tempranos, tardíos, holguras y ruta crítica con PERT/CPM.
-    \item Interpretar los resultados en términos de costos y tiempos.
-    \item Presentar conclusiones ejecutivas con soporte gráfico.
+ \item Formular matemáticamente el problema de distribución de la planta embotelladora mediante un modelo de programación lineal de transporte.
+ \item Minimizar el costo total logístico garantizando el cumplimiento de la demanda en los centros de distribución y respetando las restricciones de capacidad de producción.
+ \item Implementar y computar la solución del modelo matemático utilizando el entorno estadístico R y la librería lpSolve.
+ \item Interpretar la matriz de envíos óptima para determinar la asignación eficiente de recursos y la viabilidad operativa del sistema.
+ \item Evaluar el impacto económico y estructural ante variaciones en la demanda de la red logística mediante un análisis de sensibilidad.
 \end{enumerate}
 
 \subsection{Contexto del problema}
@@ -259,7 +265,7 @@ Al realizar la comparación de costos mediante una simulación en R (ver Figura 
     \centering
     \includegraphics[width=0.75\linewidth]{imagenes/sensibilidad.jpg}
     \caption{Comparación de costos en el análisis de sensibilidad}
-    \label{fig:sensibilidad}
+    \label{fig:sensibilidad}ø
 \end{figure}
 
 \subsection{Gráfico de flujos}
