@@ -244,7 +244,9 @@ Se debe determinar cuántos miles de litros enviar desde cada planta a cada CD p
     \begin{equation*}
     x_{ij} \geq 0 \quad \forall i \in \{A, B, C\}, \forall j \in \{1, 2, 3, 4\}
     \end{equation*}
-\end{itemize}\subsection{Tabla de resultados (matriz de envíos)}
+\end{itemize}
+
+\subsection{Tabla de resultados (matriz de envíos)}
 \begin{table}[H]
     \centering
     \caption{Matriz de envíos óptima (miles de litros)}
@@ -276,7 +278,7 @@ Al realizar la comparación de costos mediante una simulación en R (ver Figura 
     \centering
     \includegraphics[width=0.75\linewidth]{imagenes/sensibilidad.jpg}
     \caption{Comparación de costos en el análisis de sensibilidad}
-    \label{fig:sensibilidad}ø
+    \label{fig:sensibilidad}
 \end{figure}
 
 \subsection{Gráfico de flujos}
@@ -341,7 +343,12 @@ La empresa debe ejecutar un proyecto de instalación de una nueva red de distrib
 \end{center}
 
 \subsection{Diagrama de red}
-[Inserte aquí el diagrama de red mostrando nodos, flechas y relaciones de precedencia]
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{imagenes/RED.png}
+    \caption{Diagrama de red del proyecto (PERT/CPM)}
+    \label{fig:diagrama_red}
+\end{figure}
 
 \subsection{Tabla PERT/CPM}
 [Presentar tabla con TE, TL, Holguras y determinación de actividades críticas]
@@ -384,6 +391,9 @@ Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
 \begin{itemize}
     \item \textbf{Código R completo:}
     \begin{lstlisting}[language=R]
+# ---------------------------------------------------------
+# SCRIPT 1: MODELO DE TRANSPORTE
+# ---------------------------------------------------------
 # Inserte aqui el script completo utilizado
 # Instalacion de la libreria lpSolve (descomentar la siguiente linea si no esta instalada)
 # install.packages("lpSolve")
@@ -424,7 +434,72 @@ matriz_resultados <- solucion$solution
 rownames(matriz_resultados) <- rownames(costos)
 colnames(matriz_resultados) <- colnames(costos)
 print(matriz_resultados)
-\end{lstlisting}
+
+# ---------------------------------------------------------
+# SCRIPT 2: DIAGRAMA DE RED DEL PROYECTO
+# ---------------------------------------------------------
+library(diagram)
+
+# Configurar la ventana de dibujo y margenes
+openplotmat()
+par(mar = c(1, 1, 10, 1))
+
+# Posiciones de los nodos
+posiciones <- matrix(c(
+  0.12, 0.5,  # Nodo 1 
+  0.24, 0.5,  # Nodo 2
+  0.36, 0.5,  # Nodo 3 
+  0.48, 0.7,  # Nodo 4 
+  0.6, 0.5,   # Nodo 5 
+  0.72, 0.5,  # Nodo 6
+  0.84, 0.5,  # Nodo 7
+  0.96, 0.5   # Nodo 8 
+), ncol = 2, byrow = TRUE)
+
+# Crear la matriz de conexiones
+conexiones <- matrix(0, nrow = 8, ncol = 8)
+conexiones[1, 2] <- "A (5d)"
+conexiones[2, 3] <- "B (3d)"
+conexiones[3, 4] <- "C (4d)"
+conexiones[3, 5] <- "D (6d)"
+conexiones[4, 5] <- "Xf (0d)"
+conexiones[5, 6] <- "E (2d)"
+conexiones[6, 7] <- "F (3d)"
+conexiones[7, 8] <- "G (1d)"
+
+# Dibujar las flechas
+for (i in 1:8) {
+  for (j in 1:8) {
+    if (conexiones[i, j] != 0) {
+      tipo_linea <- if(i == 4 ) 2 else 1
+      color_linea <- if(i == 4 ) "#DC2626" else "#385D8A"
+      posicion_flecha <- if(i == 3 || i == 4) 0.85 else 0.75
+      
+      straightarrow(from = posiciones[i, ], to = posiciones[j, ], 
+                    lty = tipo_linea, lcol = color_linea, lwd = 2, 
+                    arr.pos = posicion_flecha, arr.length = 0.22, 
+                    arr.type = "triangle")
+      
+      pos_texto <- (posiciones[i, ] + posiciones[j, ]) / 2
+      if(i == 3 && j == 4) { pos_texto[1] <- pos_texto[1] - 0.03 } 
+      else if(i == 4) { pos_texto[1] <- pos_texto[1] + 0.03 } 
+      pos_texto[2] <- pos_texto[2] + 0.03 
+      
+      text(pos_texto[1], pos_texto[2], conexiones[i, j], 
+           font = 2, cex = 0.9, col = if(i == 4) "#DC2626" else "#223853")
+    }
+  }
+}
+
+# Dibujar los nodos
+for (i in 1:8) {
+  textellipse(mid = posiciones[i, ], radx = 0.022, rady = 0.022, 
+              lab = as.character(i), font = 2, cex = 1.0,
+              box.col = "#6BA2D9", lcol = "#385D8A", lwd = 2, col = "white")
+}
+
+title(main = "Red del Proyecto", cex.main = 1.2, font.main = 2)
+    \end{lstlisting}
     \item \textbf{Salidas de consola:}
     \begin{figure}[H]
         \centering
