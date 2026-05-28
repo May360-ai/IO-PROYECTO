@@ -342,7 +342,8 @@ La empresa debe ejecutar un proyecto de instalación de una nueva red de distrib
 \end{tabular}
 \end{center}
 
-\subsection{Diagrama de red}
+\subsection{Desarrollo del Método PERT/CPM}
+\subsubsection{Diagrama de red}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\linewidth]{imagenes/RED.png}
@@ -350,8 +351,87 @@ La empresa debe ejecutar un proyecto de instalación de una nueva red de distrib
     \label{fig:diagrama_red}
 \end{figure}
 
+\subsubsection{Cálculo de tiempos tempranos (Forward Pass)}
+Para calcular los tiempos tempranos se recorre el diagrama de red desde el inicio hacia el final, acumulando las duraciones. En los nodos con múltiples predecesores, se selecciona el \textbf{mayor} Término Temprano ($TT$).
+
+\begin{itemize}
+    \item \textbf{Fórmulas:}
+    \begin{itemize}
+        \item Inicio Temprano ($IT$) = $\max(TT \text{ de los predecesores inmediatos})$
+        \item Término Temprano ($TT$) = $IT + \text{Duración}$
+    \end{itemize}
+    \item \textbf{Paso a paso:}
+    \begin{itemize}
+        \item \textbf{Actividad A:} $IT_A = 0 \rightarrow TT_A = 0 + 5 = \mathbf{5}$
+        \item \textbf{Actividad B:} $IT_B = TT_A = 5 \rightarrow TT_B = 5 + 3 = \mathbf{8}$
+        \item \textbf{Actividad C:} $IT_C = TT_B = 8 \rightarrow TT_C = 8 + 4 = \mathbf{12}$
+        \item \textbf{Actividad D:} $IT_D = TT_B = 8 \rightarrow TT_D = 8 + 6 = \mathbf{14}$
+        \item \textbf{Actividad E:} $IT_E = \max(TT_C, TT_D) = \max(12, 14) = 14 \rightarrow TT_E = 14 + 2 = \mathbf{16}$
+        \item \textbf{Actividad F:} $IT_F = TT_E = 16 \rightarrow TT_F = 16 + 3 = \mathbf{19}$
+        \item \textbf{Actividad G:} $IT_G = TT_F = 19 \rightarrow TT_G = 19 + 1 = \mathbf{20}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Cálculo de tiempos tardíos (Backward Pass)}
+Para el cálculo de los tiempos tardíos se recorre la red en sentido inverso, partiendo del tiempo de terminación del proyecto ($TL_G = TT_G = 20$). En actividades con múltiples sucesores, se selecciona el \textbf{menor} Inicio Tardío ($IL$).
+
+\begin{itemize}
+    \item \textbf{Fórmulas:}
+    \begin{itemize}
+        \item Término Tardío ($TL$) = $\min(IL \text{ de los sucesores inmediatos})$
+        \item Inicio Tardío ($IL$) = $TL - \text{Duración}$
+    \end{itemize}
+    \item \textbf{Paso a paso:}
+    \begin{itemize}
+        \item \textbf{Actividad G:} $TL_G = 20 \rightarrow IL_G = 20 - 1 = \mathbf{19}$
+        \item \textbf{Actividad F:} $TL_F = IL_G = 19 \rightarrow IL_F = 19 - 3 = \mathbf{16}$
+        \item \textbf{Actividad E:} $TL_E = IL_F = 16 \rightarrow IL_E = 16 - 2 = \mathbf{14}$
+        \item \textbf{Actividad D:} $TL_D = IL_E = 14 \rightarrow IL_D = 14 - 6 = \mathbf{8}$
+        \item \textbf{Actividad C:} $TL_C = IL_E = 14 \rightarrow IL_C = 14 - 4 = \mathbf{10}$
+        \item \textbf{Actividad B:} $TL_B = \min(IL_C, IL_D) = \min(10, 8) = 8 \rightarrow IL_B = 8 - 3 = \mathbf{5}$
+        \item \textbf{Actividad A:} $TL_A = IL_B = 5 \rightarrow IL_A = 5 - 5 = \mathbf{0}$
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Cálculo de holguras y ruta crítica}
+La \textbf{Holgura Total ($H$)} representa el margen de tiempo que una actividad puede retrasarse sin postergar la fecha final del proyecto. Se define matemáticamente como:
+\begin{equation*}
+ H = TL - TT \quad \text{o bien} \quad H = IL - IT 
+\end{equation*}
+
+Las actividades cuya \textbf{Holgura es igual a 0} son consideradas \textbf{Actividades Críticas}, y el camino continuo que forman de inicio a fin es la \textbf{Ruta Crítica}.
+
+\begin{itemize}
+    \item $H_A = 5 - 5 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item $H_B = 8 - 8 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item $H_C = 14 - 12 = 2$ $\rightarrow$ No crítica
+    \item $H_D = 14 - 14 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item $H_E = 16 - 16 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item $H_F = 19 - 19 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item $H_G = 20 - 20 = 0$ $\rightarrow$ \textbf{Crítica}
+\end{itemize}
+
+\textbf{Ruta Crítica del Proyecto:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G
+
 \subsection{Tabla PERT/CPM}
-[Presentar tabla con TE, TL, Holguras y determinación de actividades críticas]
+A continuación se presenta la matriz final con todos los parámetros de tiempo calculados para el proyecto:
+
+\begin{table}[H]
+    \centering
+    \caption{Matriz PERT/CPM consolidada del proyecto}
+    \begin{tabular}{@{}cccccccc@{}}
+        \toprule
+        \textbf{Actividad} & \textbf{Duración ($t$)} & \textbf{IT} & \textbf{TT} & \textbf{IL} & \textbf{TL} & \textbf{Holgura ($H$)} & \textbf{Crítica} \\ \midrule
+        A & 5 & 0 & 5 & 0 & 5 & 0 & \textbf{Sí} \\
+        B & 3 & 5 & 8 & 5 & 8 & 0 & \textbf{Sí} \\
+        C & 4 & 8 & 12 & 10 & 14 & 2 & No \\
+        D & 6 & 8 & 14 & 8 & 14 & 0 & \textbf{Sí} \\
+        E & 2 & 14 & 16 & 14 & 16 & 0 & \textbf{Sí} \\
+        F & 3 & 16 & 19 & 16 & 19 & 0 & \textbf{Sí} \\
+        G & 1 & 19 & 20 & 19 & 20 & 0 & \textbf{Sí} \\ \bottomrule
+    \end{tabular}
+    \label{tab:pert_cpm}
+\end{table}
 
 \subsection{Diagrama de Gantt}
 [Inserte aquí el diagrama de Gantt con barras de duración, colores para ruta crítica y holguras visibles]
