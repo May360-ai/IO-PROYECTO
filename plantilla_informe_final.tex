@@ -313,13 +313,7 @@ Al realizar la comparación de costos mediante una simulación en R (ver Figura 
 \end{figure}
 
 \subsection{Interpretación}
-Con base en la matriz de envíos óptima y el análisis de sensibilidad, la interpretación de los resultados es la siguiente:
-\begin{enumerate}
-    \item \textbf{¿Qué planta envía más producto? ¿Por qué?} La Planta B envía más producto (60 miles de litros) ya que sus rutas combinadas permiten cubrir eficientemente la demanda de CD1 y CD3 con costos competitivos, y el modelo asigna la producción allí para minimizar el costo total.
-    \item \textbf{¿Qué ruta es la más utilizada? ¿Qué ruta no se utiliza?} La ruta más utilizada es A $\rightarrow$ CD2 (45 miles), seguida por las rutas desde B hacia CD1 y CD3 (30 cada una). Existen rutas sin flujo en la solución óptima (p. ej. A $\rightarrow$ CD1, B $\rightarrow$ CD2, C $\rightarrow$ CD1, C $\rightarrow$ CD2, C $\rightarrow$ CD3), lo cual es consecuencia directa de la estructura de costos y la saturación de capacidades.
-    \item \textbf{¿Por qué la Planta C solo envía a un CD?} La Planta C solo abastece a CD4 porque su costo unitario hacia CD4 es el más bajo (\$5) comparado con sus otros destinos; por tanto, el modelo la asigna íntegramente a la demanda donde resulta más rentable.
-    \item \textbf{¿Qué pasaría si la demanda de CD4 aumenta a 50?} Si la demanda de CD4 aumenta a 50, la demanda total pasa a 160, superando la capacidad total disponible (150) y generando un déficit de 10 miles de litros. Para satisfacer la demanda adicional sería necesario aumentar capacidad (p. ej. Planta C +10) o priorizar envíos según criterios comerciales; en el análisis de sensibilidad se observa que aumentar la capacidad de C en 10 unidades eleva el costo total (ejemplo: incremento de ~\$50 en el escenario simulado), por lo que hay un trade-off entre cubrir demanda y aumentar costos.
-\end{enumerate}
+Con base en la matriz de envíos óptima y el análisis de sensibilidad, se evidencia que la Planta B despacha el mayor volumen de producto (60 miles de litros) debido a que sus rutas combinadas satisfacen eficientemente la demanda de los centros CD1 y CD3 con costos competitivos. A nivel de distribución, el trayecto más utilizado es el de la Planta A hacia el CD2 (45 miles de litros), seguido por los envíos desde la Planta B hacia el CD1 y CD3 (30 miles de litros cada uno). Por el contrario, la existencia de múltiples rutas sin flujo en la solución óptima es consecuencia directa de la estructura de costos y la optimización de capacidades; el caso más claro es la Planta C, que destina toda su producción exclusivamente al CD4 por presentar el costo unitario de transporte más bajo del sistema (\$5). Finalmente, el modelo revela un límite operativo estricto: si la demanda del CD4 aumentase a 50 miles de litros, se generaría un déficit de 10 unidades al superar la capacidad instalada total. El análisis demuestra que cubrir esta demanda adicional requeriría una expansión de capacidad (siendo la ampliación de la Planta C la opción más eficiente, aunque elevando el costo total en aproximadamente \$50), lo que impone una decisión estratégica entre el nivel de cumplimiento de demanda y el incremento de costos logísticos.
 
 % --- 4.1.4. Gestión del proyecto ---
 \section{Gestión del proyecto}
@@ -434,8 +428,77 @@ A continuación se presenta la matriz final con todos los parámetros de tiempo 
 \end{table}
 
 \subsection{Diagrama de Gantt}
-[Inserte aquí el diagrama de Gantt con barras de duración, colores para ruta crítica y holguras visibles]
-
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[x=0.6cm, y=-0.7cm]
+        % Draw grid
+        \draw[lightgray, very thin] (0, 0) grid (20, 8);
+        
+        % X-axis labels
+        \foreach \x in {1,...,20} {
+            \node[anchor=south, font=\footnotesize] at (\x-0.5, 0) {\x};
+        }
+        \node[anchor=south, font=\footnotesize, font=\bfseries] at (10, -0.6) {Días};
+        
+        % Y-axis labels and bars
+        \tikzset{
+            critical/.style={fill=red!50, draw=black, thick},
+            noncritical/.style={fill=blue!40, draw=black, thick},
+            slack/.style={fill=gray!30, draw=black, dashed}
+        }
+        
+        % A: 0-5
+        \node[anchor=east, font=\footnotesize] at (-0.2, 0.5) {A (Diseño)};
+        \draw[critical] (0, 0.1) rectangle (5, 0.9);
+        \node[font=\footnotesize] at (2.5, 0.5) {5d};
+        
+        % B: 5-8
+        \node[anchor=east, font=\footnotesize] at (-0.2, 1.5) {B (Válvulas)};
+        \draw[critical] (5, 1.1) rectangle (8, 1.9);
+        \node[font=\footnotesize] at (6.5, 1.5) {3d};
+        
+        % C: 8-12, slack 12-14
+        \node[anchor=east, font=\footnotesize] at (-0.2, 2.5) {C (Inst. CD1)};
+        \draw[noncritical] (8, 2.1) rectangle (12, 2.9);
+        \node[font=\footnotesize] at (10, 2.5) {4d};
+        \draw[slack] (12, 2.1) rectangle (14, 2.9);
+        \node[font=\footnotesize] at (13, 2.5) {H=2};
+        
+        % D: 8-14
+        \node[anchor=east, font=\footnotesize] at (-0.2, 3.5) {D (Inst. CD2)};
+        \draw[critical] (8, 3.1) rectangle (14, 3.9);
+        \node[font=\footnotesize] at (11, 3.5) {6d};
+        
+        % E: 14-16
+        \node[anchor=east, font=\footnotesize] at (-0.2, 4.5) {E (Pruebas)};
+        \draw[critical] (14, 4.1) rectangle (16, 4.9);
+        \node[font=\footnotesize] at (15, 4.5) {2d};
+        
+        % F: 16-19
+        \node[anchor=east, font=\footnotesize] at (-0.2, 5.5) {F (Capacit.)};
+        \draw[critical] (16, 5.1) rectangle (19, 5.9);
+        \node[font=\footnotesize] at (17.5, 5.5) {3d};
+        
+        % G: 19-20
+        \node[anchor=east, font=\footnotesize] at (-0.2, 6.5) {G (Inicio)};
+        \draw[critical] (19, 6.1) rectangle (20, 6.9);
+        \node[font=\footnotesize] at (19.5, 6.5) {1d};
+        
+        % Legend
+        \begin{scope}[shift={(1, 8)}]
+            \draw[critical] (0, 0) rectangle (0.8, 0.4);
+            \node[anchor=west, font=\footnotesize] at (0.9, 0.2) {Ruta Crítica};
+            
+            \draw[noncritical] (6, 0) rectangle (6.8, 0.4);
+            \node[anchor=west, font=\footnotesize] at (6.9, 0.2) {No Crítica};
+            
+            \draw[slack] (12, 0) rectangle (12.8, 0.4);
+            \node[anchor=west, font=\footnotesize] at (12.9, 0.2) {Holgura};
+        \end{scope}
+    \end{tikzpicture}
+    \caption{Diagrama de Gantt del proyecto}
+    \label{fig:gantt}
+\end{figure}
 \subsection{Análisis de cumplimiento de plazo}
 Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
 \begin{itemize}
