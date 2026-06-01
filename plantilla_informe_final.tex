@@ -272,7 +272,7 @@ Para asegurar la validez de la solución óptima, se verifican las restricciones
 \subsection{Análisis de sensibilidad}
 Si la demanda del CD4 aumenta de 40 a 50 miles de litros, la demanda total del sistema pasaría a ser de 160 unidades, superando la capacidad total de producción de las plantas (150 unidades). Esto genera un sistema \textbf{desbalanceado} donde no es posible satisfacer toda la demanda con los recursos actuales. En un escenario real, esto implicaría una escasez de 10 miles de litros en el CD4 o la necesidad de aumentar la capacidad de producción en alguna de las plantas (preferiblemente en la Planta C debido a su bajo costo de envío hacia este destino).
 
-Al realizar la comparación de costos mediante una simulación en R (ver Figura \ref{fig:sensibilidad}), se observa que si aumentamos la capacidad de la Planta C en 10 unidades para cubrir el incremento de demanda del CD4, el costo total de transporte asciende de \$1230 a \$1280. Este incremento de \$50 representa un aumento del 4.07\% respecto al costo original. Este análisis confirma que la Planta C es la opción más eficiente para absorber incrementos en la demanda del CD4 debido a su proximidad y bajo costo unitario (\$5 por unidad).
+Al realizar la comparación de costos mediante una simulación en R (ver Figura \ref{fig:sensibilidad}), se observa que si aumentamos la capacidad de la Planta C en 10 unidades para cubrir el incremento de demanda del CD4, el costo total de transporte asciende de \$1,180 a \$1,230. Este incremento de \$50 representa un aumento aproximado del 4.24\% respecto al costo original. Este análisis confirma que la Planta C es la opción más eficiente para absorber incrementos en la demanda del CD4 debido a su proximidad y bajo costo unitario (\$5 por unidad).
 
 \begin{figure}[H]
     \centering
@@ -504,14 +504,25 @@ Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
 \begin{itemize}
     \item \textbf{Duración total del proyecto (ruta crítica):} 20 días.
     \item \textbf{¿Cumple con el límite de 40 días?} Sí. El proyecto cumple ampliamente el plazo máximo de 40 días.
-    \item \textbf{Holgura respecto al límite:} 20 días (40 - 20 = 20).
-    \item \textbf{Ruta crítica:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G (actividades críticas: A, B, D, E, F, G).
-    \item \textbf{Actividades no críticas:} C (ruta alternativa A-B-C-E-F-G tiene 18 días).
+    \item \textbf{Holgura respecto al límite:} 20 días (40 - 20 = 20). Este colchón es suficiente para absorber riesgos menores, pero no para fallas graves en la cadena de suministro.
+    \item \textbf{Ruta crítica:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G (actividades críticas: A, B, D, E, F, G). Se recomienda seguimiento diario sobre el avance de estas actividades.
+    \item \textbf{Actividades no críticas:} C (ruta alternativa A-B-C-E-F-G tiene 18 días) — conservar como actividad con holgura disponible para reasignaciones temporales.
+    \item \textbf{Verificación cuantitativa del plazo:} Comprobar consistencia aritmética de IT/TT/IL/TL y la suma de duraciones en la ruta crítica; validar con una corrida rápida en hoja de cálculo o script de R para evitar errores manuales.
+    \item \textbf{Evaluación probabilística (recomendación):} Realizar una simulación Monte Carlo (por ejemplo, 1.000 iteraciones) usando distribuciones triangular o beta-PERT para las duraciones, con el fin de estimar la probabilidad de terminar antes de 40 días y la distribución de fechas de finalización.
+    \item \textbf{Indicadores de control sugeridos:} porcentaje de actividades en plazo, desviación media de duración por actividad (días), y porcentaje de hitos completados según plan semanal.
     \item \textbf{Acciones de compresión (si se requirieran):}
     \begin{enumerate}
-        \item \textbf{Crashing}: Contratar recurso adicional o horas extra para reducir la duración de la actividad D (instalación en CD2), por ejemplo de 6 a 4 días mediante equipos simultáneos o subcontratación.
+        \item \textbf{Crashing}: Contratar recurso adicional o horas extra para reducir la duración de la actividad D (instalación en CD2), por ejemplo de 6 a 4 días mediante equipos simultáneos o subcontratación. Estimar coste incremental y calcular relación costo/beneficio por día salvado.
         \item \textbf{Fast-tracking}: Solapar actividades que no tengan dependencia técnica estricta (por ejemplo, iniciar parte de la capacitación F en paralelo con pruebas E cuando sea seguro), o adelantar compras y logística de B mientras finaliza A en su tramo menos crítico.
+        \item \textbf{Controles operativos}: definir checkpoints semanales, reporte de riesgos y responsable por cada actividad crítica para activación rápida de medidas correctivas.
     \end{enumerate}
+\end{itemize}
+
+\subsubsection{Verificación del plazo}
+\begin{itemize}
+    \item \textbf{Checklist de verificación:} (1) Revisar que las sumas de IT/TT y IL/TL sean consistentes; (2) Confirmar que las holguras calculadas coincidan con $H = TL - TT$; (3) Validar que la ruta crítica seleccionada sea la de mayor suma de duraciones sin holgura.
+    \item \textbf{Pruebas de validación:} ejecutar el script R adjunto (Anexo) que calcule IT/TT/IL/TL automáticamente y compare resultados con la tabla manual.
+    \item \textbf{Sensibilidad de la ruta crítica:} identificar actividades que, al aumentar su duración en 1--2 días, provoquen cambio de ruta crítica (actividades con holgura pequeña son candidatas).
 \end{itemize}
 
 % --- 4.1.5. Conclusiones y recomendaciones ---
@@ -519,14 +530,22 @@ Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
 \begin{itemize}
     \item \textbf{Resumen de hallazgos:} El modelo de transporte entrega una solución factible que satisface la demanda total al costo mínimo de \$1,180, aprovechando al máximo la capacidad de las tres plantas. El análisis de proyecto indica una duración crítica de 20 días, con 20 días de margen frente al límite de 40 días.
     \item \textbf{Respuesta:} Sí, el proyecto se puede ejecutar en 8 semanas (40 días). Con la planificación actual la ejecución prevista consume 20 días, por lo que existe un colchón confortable para riesgos e imprevistos.
-    \item \textbf{Recomendaciones operativas:}
+    \item \textbf{Recomendaciones operativas y tácticas:}
     \begin{itemize}
-        \item Mantener monitorización periódica de la demanda, especialmente en CD4; si la demanda de CD4 aumenta, priorizar incrementar la capacidad en Planta C o reoptimizar rutas para evitar aumentos de costo.
-        \item Preservar recursos y supervisión en la ruta crítica (A, B, D, E, F, G). Asignar responsables y checkpoints diarios para evitar retrasos acumulados.
-        \item Preparar un plan de contingencia que incluya las opciones de compresión descritas (crashing y fast-tracking) y un presupuesto para horas extra o subcontratación si fuera necesario.
-        \item Revisar supuestos del modelo: incluir costos de inventario, tiempos de carga/descarga y posibles variaciones de demanda en análisis futuros.
+        \item \textbf{Monitoreo de demanda:} establecer una revisión semanal de las ventas y pedidos en los CDs, con alarma al superar una desviación del 5\% respecto a la demanda prevista; priorizar medidas sobre CD4 si se detecta crecimiento sostenido.
+        \item \textbf{Capacidad y reconfiguración:} preparar un plan de aumento de capacidad en Planta C (incremento modular de 10 unidades) y un análisis de costo-beneficio que compare aumentar capacidad vs subcontratar envíos adicionales.
+        \item \textbf{Gestión de la ruta crítica:} asignar responsables claros para actividades A, B, D, E, F, G; reuniones diarias breves (stand-up) durante la fase de ejecución y reporte de variaciones mayores a 1 día.
+        \item \textbf{KPIs sugeridos:} cumplimiento de hitos (%), desviación media de duración (días), costo incremental por día en medidas de compresión, y % de capacidad utilizada por planta.
+        \item \textbf{Plan de contingencia rápido:} pre-acordar un proveedor de subcontratación para D con tarifa y disponibilidad pactada; definir umbrales para activar crashing (por ejemplo, retraso acumulado > 2 días en ruta crítica).
+        \item \textbf{Documentación y control de cambios:} mantener registro de cambios en supuestos (demanda, costos, recursos) y re-ejecutar optimización si alguno cambia >5\%.
     \end{itemize}
-    \item \textbf{Limitaciones del estudio:} El modelo asume demandas y costos determinísticos, no considera tiempos de tránsito détaillés, capacidad de flota ni restricciones operativas (turnos, disponibilidad de instaladores), y omite costos asociados a la compresión de actividades (horas extra, subcontratos). Estas limitaciones deben considerarse al implementar las recomendaciones.
+    \item \textbf{Próximos pasos recomendados (cronograma corto):}
+    \begin{enumerate}
+        \item Ejecutar un análisis de sensibilidad adicional en R sobre variaciones de demanda y costos (2 días).
+        \item Preparar la ampliación modular de capacidad de Planta C y estimar CAPEX/OPEX asociado (3 días).
+        \item Implementar el script de validación PERT para automatizar verificaciones durante la ejecución (1 día).
+    \end{enumerate}
+    \item \textbf{Limitaciones del estudio:} El modelo asume demandas y costos determinísticos, no considera tiempos de tránsito detallados, capacidad de flota ni restricciones operativas (turnos, disponibilidad de instaladores), y omite costos asociados a la compresión de actividades (horas extra, subcontratos). Estas limitaciones deben considerarse al implementar las recomendaciones.
 \end{itemize}
 
 % --- 4.1.6. Anexos ---
@@ -651,6 +670,24 @@ title(main = "Red del Proyecto", cex.main = 1.2, font.main = 2)
         \label{fig:placeholder}
     \end{figure}
     \item \textbf{Material complementario:} [Gráficos adicionales o tablas de apoyo]
+    \item \textbf{Datos y archivos adjuntos:}
+    \begin{itemize}
+        \item Archivo de datos original: \texttt{datos\_proyecto.csv} (contiene oferta, demanda y matriz de costos).
+        \item Tabla PERT/CPM en formato CSV: \texttt{pert\_cpm.csv} (columnas: Actividad, Duración, IT, TT, IL, TL, Holgura).
+        \item Resultados de sensibilidad: \texttt{sensibilidad\_cd4.csv} (costos y duración para escenarios alternativos).
+    \end{itemize}
+    \item \textbf{Instrucciones para reproducir los análisis (R):}
+    \begin{itemize}
+        \item Asegúrese de tener R instalado y las librerías \texttt{lpSolve} y \texttt{diagram}.
+        \item Coloque los archivos CSV en el mismo directorio que el script R adjunto.
+        \item Ejecutar en consola R: \texttt{source('script\_transporte.R')} y \texttt{source('script\_pert.R')}.
+        \item Para la simulación Monte Carlo sugerida, ejecutar \texttt{script\_montecarlo.R} (parámetros: iteraciones = 1000, distribuciones = 'triangular').
+    \end{itemize}
+    \item \textbf{Reproducibilidad y notas técnicas:}
+    \begin{itemize}
+        \item Todos los scripts generan archivos de salida en formato CSV y gráficos en PNG en la carpeta \texttt{output/}.
+        \item Versionado: conservar una copia de los datos originales antes de ajustar parámetros para evitar pérdida de trazabilidad.
+    \end{itemize}
 \end{itemize}
 
 \end{document}
