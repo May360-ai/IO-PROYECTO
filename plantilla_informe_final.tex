@@ -136,7 +136,9 @@ La optimización de la cadena de suministro y la logística de distribución con
 
 El presente documento detalla la formulación y resolución de un modelo de transporte aplicado a una red logística de una planta embotelladora de agua purificada. El sistema estructurado está compuesto por tres centros de producción (plantas A, B y C) con capacidades de manufactura finitas, las cuales deben abastecer a cuatro centros de distribución (CD1, CD2, CD3 y CD4) que presentan requerimientos de demanda exactos. Cada ruta posible entre un origen y un destino tiene asociado un costo unitario de transporte diferenciado, exigiendo un análisis matemático para la toma de decisiones.\\
 
-Para abordar este escenario se emplea un enfoque cuantitativo mediante la construcción de un modelo de programación lineal. Las variables de decisión cuantifican el volumen de producto a trasladar en cada ruta, sujetas a restricciones de no negatividad, límites de capacidad instalada en las plantas y cumplimiento estricto de la demanda en cada centro receptor. La resolución computacional del modelo se ejecuta en el entorno estadístico R mediante la librería lpSolve, permitiendo identificar la matriz de envíos óptima y establecer una base técnica para evaluar la sensibilidad del sistema ante variaciones en los requerimientos del mercado.
+Para abordar este escenario se emplea un enfoque cuantitativo mediante la construcción de un modelo de programación lineal. Las variables de decisión cuantifican el volumen de producto a trasladar en cada ruta, sujetas a restricciones de no negatividad, límites de capacidad instalada en las plantas y cumplimiento estricto de la demanda en cada centro receptor. La resolución computacional del modelo se ejecuta en el entorno estadístico R mediante la librería lpSolve, permitiendo identificar la matriz de envíos óptima y establecer una base técnica para evaluar la sensibilidad del sistema ante variaciones en los requerimientos del mercado.\\
+
+De manera complementaria, la viabilidad operativa del sistema logístico exige la instalación de una nueva red de distribución. Para planificar y controlar este despliegue, se aplican las técnicas de gestión de proyectos PERT/CPM. Este análisis matemático permite modelar las dependencias entre actividades, identificar la ruta crítica y calcular las holguras operativas, con el propósito de garantizar el cumplimiento estricto del plazo máximo de 40 días hábiles para la puesta en marcha de la red.
 
 \subsection{Problema planteado}
 Una planta embotelladora de agua purificada tiene 3 centros de producción y debe abastecer a 4 centros de distribución (CD). Se busca minimizar el costo total de transporte y planificar la instalación de una nueva red de distribución con 7 actividades en un plazo máximo de 40 días.
@@ -148,6 +150,8 @@ Una planta embotelladora de agua purificada tiene 3 centros de producción y deb
  \item Implementar y computar la solución del modelo matemático utilizando el entorno estadístico R y la librería lpSolve.
  \item Interpretar la matriz de envíos óptima para determinar la asignación eficiente de recursos y la viabilidad operativa del sistema.
  \item Evaluar el impacto económico y estructural ante variaciones en la demanda de la red logística mediante un análisis de sensibilidad.
+ \item Modelar la red de actividades del proyecto de instalación mediante la metodología PERT/CPM.
+ \item Determinar la ruta crítica, los tiempos de ejecución y las holguras operativas para validar el cumplimiento del límite máximo de 40 días.
 \end{enumerate}
 
 \subsection{Contexto del problema}
@@ -164,6 +168,9 @@ Los resultados principales obtenidos de la implementación son:
     \item \textbf{Uso de capacidades:} Las plantas quedan totalmente utilizadas (A: 50, B: 60, C: 40).
     \item \textbf{Satisfacción de demanda:} Cada centro de distribución recibe exactamente su demanda (CD1:30, CD2:45, CD3:35, CD4:40).
     \item \textbf{Situación de equilibrio:} La demanda total (150) coincide con la capacidad total de producción (150); cualquier aumento de demanda exige ajustar capacidad o priorizar destinos.
+    \item \textbf{Duración total del proyecto:} 20 días hábiles.
+    \item \textbf{Ruta crítica:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G.
+    \item \textbf{Holgura total:} 20 días de margen operativo respecto al límite impuesto de 40 días.
 \end{itemize}
 
 \subsection{Conclusión principal}
@@ -345,85 +352,83 @@ La empresa debe ejecutar un proyecto de instalación de una nueva red de distrib
     \label{fig:diagrama_red}
 \end{figure}
 
-\subsubsection{Cálculo de tiempos tempranos (Forward Pass)}
-Para calcular los tiempos tempranos se recorre el diagrama de red desde el inicio hacia el final, acumulando las duraciones. En los nodos con múltiples predecesores, se selecciona el \textbf{mayor} Término Temprano ($TT$).
+\subsubsection{Cálculo de tiempos tempranos de los eventos (Forward Pass)}
+Para calcular los tiempos tempranos en un diagrama de red AOA (Actividad en la Flecha), se calculan los tiempos para los eventos (nodos). Se recorre la red desde el nodo inicial (1) hasta el final (8). En los nodos de convergencia, se selecciona el \textbf{mayor} valor posible.
 
 \begin{itemize}
-    \item \textbf{Fórmulas:}
-    \begin{itemize}
-        \item Inicio Temprano ($IT$) = $\max(TT \text{ de los predecesores inmediatos})$
-        \item Término Temprano ($TT$) = $IT + \text{Duración}$
-    \end{itemize}
+    \item \textbf{Fórmula:} $T_E^{(j)} = \max_{i} (T_E^{(i)} + d_{ij})$, donde $d_{ij}$ es la duración de la actividad que va del nodo $i$ al nodo $j$.
     \item \textbf{Paso a paso:}
     \begin{itemize}
-        \item \textbf{Actividad A:} $IT_A = 0 \rightarrow TT_A = 0 + 5 = \mathbf{5}$
-        \item \textbf{Actividad B:} $IT_B = TT_A = 5 \rightarrow TT_B = 5 + 3 = \mathbf{8}$
-        \item \textbf{Actividad C:} $IT_C = TT_B = 8 \rightarrow TT_C = 8 + 4 = \mathbf{12}$
-        \item \textbf{Actividad D:} $IT_D = TT_B = 8 \rightarrow TT_D = 8 + 6 = \mathbf{14}$
-        \item \textbf{Actividad E:} $IT_E = \max(TT_C, TT_D) = \max(12, 14) = 14 \rightarrow TT_E = 14 + 2 = \mathbf{16}$
-        \item \textbf{Actividad F:} $IT_F = TT_E = 16 \rightarrow TT_F = 16 + 3 = \mathbf{19}$
-        \item \textbf{Actividad G:} $IT_G = TT_F = 19 \rightarrow TT_G = 19 + 1 = \mathbf{20}$
+        \item \textbf{Nodo 1:} $T_E^{(1)} = \mathbf{0}$
+        \item \textbf{Nodo 2:} $T_E^{(2)} = T_E^{(1)} + 5 \text{ (Actividad A)} = 0 + 5 = \mathbf{5}$
+        \item \textbf{Nodo 3:} $T_E^{(3)} = T_E^{(2)} + 3 \text{ (Actividad B)} = 5 + 3 = \mathbf{8}$
+        \item \textbf{Nodo 4:} $T_E^{(4)} = T_E^{(3)} + 4 \text{ (Actividad C)} = 8 + 4 = \mathbf{12}$
+        \item \textbf{Nodo 5:} $\max \begin{cases} T_E^{(3)} + 6 \text{ (Actividad D)} = 8 + 6 = 14 \\ T_E^{(4)} + 0 \text{ (Ficticia Xf)} = 12 + 0 = 12 \end{cases} \rightarrow T_E^{(5)} = \mathbf{14}$
+        \item \textbf{Nodo 6:} $T_E^{(6)} = T_E^{(5)} + 2 \text{ (Actividad E)} = 14 + 2 = \mathbf{16}$
+        \item \textbf{Nodo 7:} $T_E^{(7)} = T_E^{(6)} + 3 \text{ (Actividad F)} = 16 + 3 = \mathbf{19}$
+        \item \textbf{Nodo 8:} $T_E^{(8)} = T_E^{(7)} + 1 \text{ (Actividad G)} = 19 + 1 = \mathbf{20}$
     \end{itemize}
 \end{itemize}
 
-\subsubsection{Cálculo de tiempos tardíos (Backward Pass)}
-Para el cálculo de los tiempos tardíos se recorre la red en sentido inverso, partiendo del tiempo de terminación del proyecto ($TL_G = TT_G = 20$). En actividades con múltiples sucesores, se selecciona el \textbf{menor} Inicio Tardío ($IL$).
+\subsubsection{Cálculo de tiempos tardíos de los eventos (Backward Pass)}
+Para calcular los tiempos tardíos se recorre la red en sentido inverso, partiendo del tiempo de terminación del proyecto en el último nodo ($T_L^{(8)} = T_E^{(8)} = 20$). En nodos donde inician múltiples actividades, se selecciona el \textbf{menor} valor.
 
 \begin{itemize}
-    \item \textbf{Fórmulas:}
-    \begin{itemize}
-        \item Término Tardío ($TL$) = $\min(IL \text{ de los sucesores inmediatos})$
-        \item Inicio Tardío ($IL$) = $TL - \text{Duración}$
-    \end{itemize}
+    \item \textbf{Fórmula:} $T_L^{(i)} = \min_{j} (T_L^{(j)} - d_{ij})$
     \item \textbf{Paso a paso:}
     \begin{itemize}
-        \item \textbf{Actividad G:} $TL_G = 20 \rightarrow IL_G = 20 - 1 = \mathbf{19}$
-        \item \textbf{Actividad F:} $TL_F = IL_G = 19 \rightarrow IL_F = 19 - 3 = \mathbf{16}$
-        \item \textbf{Actividad E:} $TL_E = IL_F = 16 \rightarrow IL_E = 16 - 2 = \mathbf{14}$
-        \item \textbf{Actividad D:} $TL_D = IL_E = 14 \rightarrow IL_D = 14 - 6 = \mathbf{8}$
-        \item \textbf{Actividad C:} $TL_C = IL_E = 14 \rightarrow IL_C = 14 - 4 = \mathbf{10}$
-        \item \textbf{Actividad B:} $TL_B = \min(IL_C, IL_D) = \min(10, 8) = 8 \rightarrow IL_B = 8 - 3 = \mathbf{5}$
-        \item \textbf{Actividad A:} $TL_A = IL_B = 5 \rightarrow IL_A = 5 - 5 = \mathbf{0}$
+        \item \textbf{Nodo 8:} $T_L^{(8)} = \mathbf{20}$
+        \item \textbf{Nodo 7:} $T_L^{(7)} = T_L^{(8)} - 1 \text{ (Actividad G)} = 20 - 1 = \mathbf{19}$
+        \item \textbf{Nodo 6:} $T_L^{(6)} = T_L^{(7)} - 3 \text{ (Actividad F)} = 19 - 3 = \mathbf{16}$
+        \item \textbf{Nodo 5:} $T_L^{(5)} = T_L^{(6)} - 2 \text{ (Actividad E)} = 16 - 2 = \mathbf{14}$
+        \item \textbf{Nodo 4:} $T_L^{(4)} = T_L^{(5)} - 0 \text{ (Ficticia Xf)} = 14 - 0 = \mathbf{14}$
+        \item \textbf{Nodo 3:} $\min \begin{cases} T_L^{(4)} - 4 \text{ (Actividad C)} = 14 - 4 = 10 \\ T_L^{(5)} - 6 \text{ (Actividad D)} = 14 - 6 = 8 \end{cases} \rightarrow T_L^{(3)} = \mathbf{8}$
+        \item \textbf{Nodo 2:} $T_L^{(2)} = T_L^{(3)} - 3 \text{ (Actividad B)} = 8 - 3 = \mathbf{5}$
+        \item \textbf{Nodo 1:} $T_L^{(1)} = T_L^{(2)} - 5 \text{ (Actividad A)} = 5 - 5 = \mathbf{0}$
     \end{itemize}
 \end{itemize}
 
 \subsubsection{Cálculo de holguras y ruta crítica}
-La \textbf{Holgura Total ($H$)} representa el margen de tiempo que una actividad puede retrasarse sin postergar la fecha final del proyecto. Se define matemáticamente como:
+La \textbf{Holgura Total ($H$)} de una actividad representa el margen de tiempo que puede retrasarse sin postergar la fecha final del proyecto. Para una actividad entre los nodos $i$ y $j$ con duración $d_{ij}$:
 \begin{equation*}
- H = TL - TT \quad \text{o bien} \quad H = IL - IT 
+ H = T_L^{(j)} - T_E^{(i)} - d_{ij}
 \end{equation*}
 
 Las actividades cuya \textbf{Holgura es igual a 0} son consideradas \textbf{Actividades Críticas}, y el camino continuo que forman de inicio a fin es la \textbf{Ruta Crítica}.
 
 \begin{itemize}
-    \item $H_A = 5 - 5 = 0$ $\rightarrow$ \textbf{Crítica}
-    \item $H_B = 8 - 8 = 0$ $\rightarrow$ \textbf{Crítica}
-    \item $H_C = 14 - 12 = 2$ $\rightarrow$ No crítica
-    \item $H_D = 14 - 14 = 0$ $\rightarrow$ \textbf{Crítica}
-    \item $H_E = 16 - 16 = 0$ $\rightarrow$ \textbf{Crítica}
-    \item $H_F = 19 - 19 = 0$ $\rightarrow$ \textbf{Crítica}
-    \item $H_G = 20 - 20 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad A (1 $\rightarrow$ 2): $H_A = 5 - 0 - 5 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad B (2 $\rightarrow$ 3): $H_B = 8 - 5 - 3 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad C (3 $\rightarrow$ 4): $H_C = 14 - 8 - 4 = 2$ $\rightarrow$ No crítica
+    \item Actividad D (3 $\rightarrow$ 5): $H_D = 14 - 8 - 6 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad Ficticia Xf (4 $\rightarrow$ 5): $H_{Xf} = 14 - 12 - 0 = 2$ $\rightarrow$ No crítica
+    \item Actividad E (5 $\rightarrow$ 6): $H_E = 16 - 14 - 2 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad F (6 $\rightarrow$ 7): $H_F = 19 - 16 - 3 = 0$ $\rightarrow$ \textbf{Crítica}
+    \item Actividad G (7 $\rightarrow$ 8): $H_G = 20 - 19 - 1 = 0$ $\rightarrow$ \textbf{Crítica}
 \end{itemize}
 
 \textbf{Ruta Crítica del Proyecto:} A $\rightarrow$ B $\rightarrow$ D $\rightarrow$ E $\rightarrow$ F $\rightarrow$ G
 
 \subsection{Tabla PERT/CPM}
-A continuación se presenta la matriz final con todos los parámetros de tiempo calculados para el proyecto:
+A continuación se presenta la matriz final con todos los parámetros de tiempo calculados para las actividades (donde $IT=T_E^{(i)}$, $TL=T_L^{(j)}$, $TT=IT+t$, $IL=TL-t$):
 
 \begin{table}[H]
     \centering
-    \caption{Matriz PERT/CPM consolidada del proyecto}
-    \begin{tabular}{@{}cccccccc@{}}
+    \caption{Matriz PERT/CPM consolidada del proyecto (Notación AOA)}
+    \resizebox{\linewidth}{!}{%
+    \begin{tabular}{@{}ccccccccc@{}}
         \toprule
-        \textbf{Actividad} & \textbf{Duración ($t$)} & \textbf{IT} & \textbf{TT} & \textbf{IL} & \textbf{TL} & \textbf{Holgura ($H$)} & \textbf{Crítica} \\ \midrule
-        A & 5 & 0 & 5 & 0 & 5 & 0 & \textbf{Sí} \\
-        B & 3 & 5 & 8 & 5 & 8 & 0 & \textbf{Sí} \\
-        C & 4 & 8 & 12 & 10 & 14 & 2 & No \\
-        D & 6 & 8 & 14 & 8 & 14 & 0 & \textbf{Sí} \\
-        E & 2 & 14 & 16 & 14 & 16 & 0 & \textbf{Sí} \\
-        F & 3 & 16 & 19 & 16 & 19 & 0 & \textbf{Sí} \\
-        G & 1 & 19 & 20 & 19 & 20 & 0 & \textbf{Sí} \\ \bottomrule
-    \end{tabular}
+        \textbf{Actividad} & \textbf{Nodos (i$\rightarrow$j)} & \textbf{Duración ($t$)} & \textbf{IT ($T_E^{(i)}$)} & \textbf{TT} & \textbf{IL} & \textbf{TL ($T_L^{(j)}$)} & \textbf{Holgura ($H$)} & \textbf{Crítica} \\ \midrule
+        A & 1 $\rightarrow$ 2 & 5 & 0 & 5 & 0 & 5 & 0 & \textbf{Sí} \\
+        B & 2 $\rightarrow$ 3 & 3 & 5 & 8 & 5 & 8 & 0 & \textbf{Sí} \\
+        C & 3 $\rightarrow$ 4 & 4 & 8 & 12 & 10 & 14 & 2 & No \\
+        D & 3 $\rightarrow$ 5 & 6 & 8 & 14 & 8 & 14 & 0 & \textbf{Sí} \\
+        Xf & 4 $\rightarrow$ 5 & 0 & 12 & 12 & 14 & 14 & 2 & No \\
+        E & 5 $\rightarrow$ 6 & 2 & 14 & 16 & 14 & 16 & 0 & \textbf{Sí} \\
+        F & 6 $\rightarrow$ 7 & 3 & 16 & 19 & 16 & 19 & 0 & \textbf{Sí} \\
+        G & 7 $\rightarrow$ 8 & 1 & 19 & 20 & 19 & 20 & 0 & \textbf{Sí} \\ \bottomrule
+    \end{tabular}%
+    }
     \label{tab:pert_cpm}
 \end{table}
 
@@ -527,26 +532,12 @@ Resultados del análisis PERT/CPM sobre las actividades A--G proporcionadas:
 
 % --- 4.1.5. Conclusiones y recomendaciones ---
 \section{Conclusiones y recomendaciones}
-\begin{itemize}
-    \item \textbf{Resumen de hallazgos:} El modelo de transporte entrega una solución factible que satisface la demanda total al costo mínimo de \$1,180, aprovechando al máximo la capacidad de las tres plantas. El análisis de proyecto indica una duración crítica de 20 días, con 20 días de margen frente al límite de 40 días.
-    \item \textbf{Respuesta:} Sí, el proyecto se puede ejecutar en 8 semanas (40 días). Con la planificación actual la ejecución prevista consume 20 días, por lo que existe un colchón confortable para riesgos e imprevistos.
-    \item \textbf{Recomendaciones operativas y tácticas:}
-    \begin{itemize}
-        \item \textbf{Monitoreo de demanda:} establecer una revisión semanal de las ventas y pedidos en los CDs, con alarma al superar una desviación del 5\% respecto a la demanda prevista; priorizar medidas sobre CD4 si se detecta crecimiento sostenido.
-        \item \textbf{Capacidad y reconfiguración:} preparar un plan de aumento de capacidad en Planta C (incremento modular de 10 unidades) y un análisis de costo-beneficio que compare aumentar capacidad vs subcontratar envíos adicionales.
-        \item \textbf{Gestión de la ruta crítica:} asignar responsables claros para actividades A, B, D, E, F, G; reuniones diarias breves (stand-up) durante la fase de ejecución y reporte de variaciones mayores a 1 día.
-        \item \textbf{KPIs sugeridos:} cumplimiento de hitos (%), desviación media de duración (días), costo incremental por día en medidas de compresión, y % de capacidad utilizada por planta.
-        \item \textbf{Plan de contingencia rápido:} pre-acordar un proveedor de subcontratación para D con tarifa y disponibilidad pactada; definir umbrales para activar crashing (por ejemplo, retraso acumulado > 2 días en ruta crítica).
-        \item \textbf{Documentación y control de cambios:} mantener registro de cambios en supuestos (demanda, costos, recursos) y re-ejecutar optimización si alguno cambia >5\%.
-    \end{itemize}
-    \item \textbf{Próximos pasos recomendados (cronograma corto):}
-    \begin{enumerate}
-        \item Ejecutar un análisis de sensibilidad adicional en R sobre variaciones de demanda y costos (2 días).
-        \item Preparar la ampliación modular de capacidad de Planta C y estimar CAPEX/OPEX asociado (3 días).
-        \item Implementar el script de validación PERT para automatizar verificaciones durante la ejecución (1 día).
-    \end{enumerate}
-    \item \textbf{Limitaciones del estudio:} El modelo asume demandas y costos determinísticos, no considera tiempos de tránsito detallados, capacidad de flota ni restricciones operativas (turnos, disponibilidad de instaladores), y omite costos asociados a la compresión de actividades (horas extra, subcontratos). Estas limitaciones deben considerarse al implementar las recomendaciones.
-\end{itemize}
+
+El análisis integral del sistema logístico demuestra que es posible satisfacer la demanda de los cuatro centros de distribución incurriendo en un costo mínimo de \$1,180, lo que requiere la utilización total de la capacidad de producción de las tres plantas. Simultáneamente, el proyecto de instalación de la nueva red de distribución es completamente factible dentro del límite establecido de 40 días. La evaluación temporal indica una duración de 20 días hábiles guiada por la ruta crítica, dejando una holgura de 20 días para absorber eventuales contingencias operativas sin comprometer la fecha final de entrega.\\
+
+Para asegurar la estabilidad del modelo frente a variaciones del mercado, se recomienda implementar una revisión semanal de los pedidos en los centros de distribución. Si se detecta un incremento de demanda sostenido superior al 5\%, particularmente en el CD4, será necesario activar un plan de expansión modular de 10 unidades en la Planta C o evaluar la viabilidad de subcontratar el transporte logístico. En el ámbito de la ejecución del proyecto, el control debe centrarse en la ruta crítica (actividades A, B, D, E, F y G) mediante el monitoreo de indicadores de desviación temporal y cumplimiento porcentual de hitos. Se sugiere disponer de proveedores pre-acordados, especialmente para la instalación en el CD2 (actividad D), permitiendo activar medidas de compresión de cronograma si los retrasos acumulados superan los dos días.\\
+
+A corto plazo, resulta pertinente ejecutar un análisis de sensibilidad ampliado en R sobre las fluctuaciones de demanda, preparar las estimaciones financieras para la ampliación de la Planta C, y automatizar las validaciones de tiempos de proyecto mediante scripts computacionales. La implementación de estas directrices debe ejecutarse teniendo en cuenta las limitaciones inherentes del estudio, ya que los modelos aplicados asumen condiciones determinísticas y no contemplan perturbaciones estocásticas operativas, como tiempos de tránsito exactos, límites de flota o los sobrecostos reales derivados del trabajo en horas extras y subcontrataciones rápidas.
 
 % --- 4.1.6. Anexos ---
 \section{Anexos}
@@ -669,25 +660,6 @@ title(main = "Red del Proyecto", cex.main = 1.2, font.main = 2)
         \caption{Resultados en R}
         \label{fig:placeholder}
     \end{figure}
-    \item \textbf{Material complementario:} [Gráficos adicionales o tablas de apoyo]
-    \item \textbf{Datos y archivos adjuntos:}
-    \begin{itemize}
-        \item Archivo de datos original: \texttt{datos\_proyecto.csv} (contiene oferta, demanda y matriz de costos).
-        \item Tabla PERT/CPM en formato CSV: \texttt{pert\_cpm.csv} (columnas: Actividad, Duración, IT, TT, IL, TL, Holgura).
-        \item Resultados de sensibilidad: \texttt{sensibilidad\_cd4.csv} (costos y duración para escenarios alternativos).
-    \end{itemize}
-    \item \textbf{Instrucciones para reproducir los análisis (R):}
-    \begin{itemize}
-        \item Asegúrese de tener R instalado y las librerías \texttt{lpSolve} y \texttt{diagram}.
-        \item Coloque los archivos CSV en el mismo directorio que el script R adjunto.
-        \item Ejecutar en consola R: \texttt{source('script\_transporte.R')} y \texttt{source('script\_pert.R')}.
-        \item Para la simulación Monte Carlo sugerida, ejecutar \texttt{script\_montecarlo.R} (parámetros: iteraciones = 1000, distribuciones = 'triangular').
-    \end{itemize}
-    \item \textbf{Reproducibilidad y notas técnicas:}
-    \begin{itemize}
-        \item Todos los scripts generan archivos de salida en formato CSV y gráficos en PNG en la carpeta \texttt{output/}.
-        \item Versionado: conservar una copia de los datos originales antes de ajustar parámetros para evitar pérdida de trazabilidad.
-    \end{itemize}
 \end{itemize}
 
 \end{document}
